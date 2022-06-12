@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Pictochat</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+
+    <button onclick="Historique()">historique</button>
+
+    <h1>Pictochat</h1>
+
+    <h3>Message</h3>
+
+    <textarea id="textArea" rows="4" cols="50"></textarea>
+    <br>
+    <button onclick="sendToServer(document.getElementById('textArea').value)">envoyer</button>
+    <br>
+    <p id="display"></p>
+    <hr>
+    <br>
+    <div id="show_message" style="background-color: whitesmoke; padding : 50px">
+
+        <script type="text/javascript">
+
+            // ############## Xhr historique ##############
+
+            'use strict'
+
+            function reqListener (data) {
+                document.body.innerHTML += this.responseText + '<br>';
+            }        
+        
+            function Historique() {
+                var oReq = new XMLHttpRequest();
+                oReq.addEventListener("load", reqListener);
+                oReq.open("GET", "historique");
+                oReq.send();
+            }
+
+            // ############## WebSocket ##############
+
+            function sendToServer(message) {
+                console.log(message);
+
+
+                ws.send(message);
+
+                let messageXhr = message;
+                
+                next(messageXhr);
+            }
+
+            console.log('open: ');
+            var ws = new WebSocket("ws://127.0.0.1:8081");
+        
+            ws.onopen = function (event) {
+                console.log('Connection is open ...');
+                ws.send("A crew mate has joined");
+            };
+        
+            ws.onerror = function (err) {
+                console.log('err: ', err);
+            }
+        
+          ws.onmessage = function (event) {
+                console.log(event.data);
+                let message = event.data;
+
+                let messageElem = document.createElement('p');
+                messageElem.textContent = message;
+                document.getElementById('show_message').prepend(messageElem);
+                //document.body.innerHTML += event.data + '<br>';
+          };
+        
+          ws.onclose = function() {
+              console.log("Connection is closed...");
+          }
+
+          function next(messageXhr) {
+            console.log(messageXhr);
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "http://localhost:8000/" + messageXhr, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    document.getElementById("display").innerHTML = xhr.responseText;
+                }
+            };
+            xhr.send();
+        }
+
+        </script>
+
+    </div>
+
+
+    <!-- // function Uwu(){// 1. Créer un nouvel objet XMLHttpRequest
+    //         let xhr = new XMLHttpRequest();
+
+    //         // 2. Le configure : GET-request pour l'URL /article/.../load
+    //         xhr.open('GET', 'history/historique.html');
+
+    //         // 4. Ceci sera appelé après la réception de la réponse
+    //         xhr.onload = function() {
+    //         if (xhr.status != 200) { // analyse l'état HTTP de la réponse
+    //             alert(`Error ${xhr.status}: ${xhr.statusText}`); // e.g. 404: Not Found
+    //         } else { // show the result
+    //             alert(`Done, got ${xhr.response.length} bytes`); // response est la réponse du serveur
+    //         }
+    //         };
+
+    //         xhr.onprogress = function(event) {
+    //         if (event.lengthComputable) {
+    //             alert(`Received ${event.loaded} of ${event.total} bytes`);
+    //         } else {
+    //             alert(`Received ${event.loaded} bytes`); // pas de Content-Length
+    //         }
+    //         };
+
+    //         xhr.onerror = function() {
+    //         alert("Request failed");
+    //         };
+   
+    //     } -->
+</body>
+
+</html>
